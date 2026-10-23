@@ -8,7 +8,8 @@ export function proxy(request: NextRequest) {
     "default-src 'self'",
     // 'unsafe-eval' só em desenvolvimento: o React usa eval para mostrar a pilha de erros do servidor.
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
-    `style-src 'self' 'nonce-${nonce}'`,
+    // Em desenvolvimento o Next injeta estilos inline sem nonce (e, com nonce presente, 'unsafe-inline' é ignorado).
+    `style-src 'self' ${dev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
     "img-src 'self' blob: data:",
     "font-src 'self'",
     "object-src 'none'",

@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes, type ReactNode } from "react";
 
 type Props = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; hint?: string };
 
@@ -28,5 +28,26 @@ export function Field({ label, error, hint, ...input }: Props) {
         </p>
       ) : null}
     </div>
+  );
+}
+
+/** Aviso geral do formulário, anunciado por leitores de tela. */
+export function FormAlert({ children }: { children: ReactNode }) {
+  return (
+    <p role="alert" className="rounded-md border border-red-600 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+      {children}
+    </p>
+  );
+}
+
+export function SubmitButton({ sending, label, sendingLabel }: { sending: boolean; label: string; sendingLabel: string }) {
+  return (
+    <button
+      type="submit"
+      disabled={sending}
+      className="rounded-md bg-accent px-4 py-2 font-medium text-white disabled:opacity-60 dark:text-background"
+    >
+      {sending ? sendingLabel : label}
+    </button>
   );
 }

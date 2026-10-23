@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# verz-frontend
 
-## Getting Started
+Frontend da casa de leilões **verz** em Next.js 16 (App Router), React 19, TypeScript e Tailwind 4.
+As decisões do projeto estão em `../DECISOES.md`.
 
-First, run the development server:
+## Como rodar
+
+O navegador sempre entra pelo nginx (`http://localhost:8080`), que manda `/api/` para o Django e o resto para o Next.
+Os arquivos do Docker Compose ficam no repositório `verz-backend`.
+
+- **Tudo em containers:** em `verz-backend`, `docker compose up --build` e abra `http://localhost:8080`.
+- **Front com recarga automática:** aqui, `npm run dev`; em `verz-backend`,
+  `FRONTEND_UPSTREAM=host.docker.internal:3000 docker compose up db backend worker nginx`; abra `http://localhost:8080`.
+
+## Testes e checagens
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test            # Vitest + Testing Library
+npx tsc --noEmit    # tipos
+npx eslint .        # lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Segurança
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- CSP com nonce por requisição em `src/proxy.ts` (sem `unsafe-inline`/`unsafe-eval` em produção; há teste).
+- O cliente da API (`src/lib/api.ts`) lê o cookie `csrftoken` antes de cada escrita: o Django troca o token no login e no logout.
