@@ -25,7 +25,7 @@ export function Header() {
   }
 
   return (
-    <header>
+    <header className="print:hidden">
       <div className="border-b border-border">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-1.5 sm:px-6">
           <p className="kicker hidden sm:block">Leilões ao vivo · Obras em domínio público</p>

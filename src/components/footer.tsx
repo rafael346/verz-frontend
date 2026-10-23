@@ -1,7 +1,7 @@
 /** Colofão, como no fim de um catálogo impresso: quem somos, de onde vêm as obras e como auditar. */
 export function Footer() {
   return (
-    <footer className="mt-24">
+    <footer className="mt-24 print:hidden">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div className="double-rule" />
       </div>

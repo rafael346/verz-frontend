@@ -31,6 +31,20 @@
   --live: #4fbf86;
 }
 
+/* Papel é papel: impresso (o comprovante), sempre o tema claro; o navegador não imprime o fundo escuro. */
+@media print {
+  .dark {
+    --paper: #fff;
+    --sheet: #fff;
+    --ink: #1b1714;
+    --ink-soft: #5b5148;
+    --rule: #d8ccb9;
+    --accent: #8a1c12;
+    --live: #1f6b45;
+    color-scheme: light;
+  }
+}
+
 @theme inline {
   --color-background: var(--paper);
   --color-card: var(--sheet);

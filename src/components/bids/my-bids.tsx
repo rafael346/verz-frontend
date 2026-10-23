@@ -8,6 +8,7 @@ import { lotNumber, money } from "@/lib/format";
 import type { Lot, Page } from "@/lib/lots";
 import { pathOf } from "@/lib/lots";
 
+import { CopyLink } from "../audit/copy-link";
 import { useAuth } from "../auth-provider";
 import { Countdown } from "../countdown";
 import { FormAlert, primaryButton } from "../field";
@@ -34,31 +35,14 @@ function Gate({ text, href, action }: { text: string; href: string; action: stri
 
 /** Link público do comprovante, para guardar ou compartilhar (a página é pública: D19). */
 function ReceiptLinks({ token }: { token: string }) {
-  const [copied, setCopied] = useState<string | null>(null);
   const href = `/comprovante/${token}`;
-
-  async function copy() {
-    const url = `${window.location.origin}${href}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied("Link copiado");
-    } catch {
-      setCopied(`Não foi possível copiar. O link é ${url}`); // sem permissão de área de transferência
-    }
-  }
-
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
       {/* Sem prefetch: um comprovante por arremate da lista seria baixado sem ninguém pedir. */}
       <Link href={href} prefetch={false} className="ink-link pb-0.5">
         Ver comprovante
       </Link>
-      <button type="button" onClick={copy} className="pressable ink-link pb-0.5 text-muted hover:text-foreground">
-        Copiar link do comprovante
-      </button>
-      <span role="status" className="text-xs text-muted">
-        {copied}
-      </span>
+      <CopyLink path={href} label="Copiar link do comprovante" className="text-muted hover:text-foreground" />
     </div>
   );
 }

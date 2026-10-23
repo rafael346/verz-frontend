@@ -277,7 +277,12 @@ export function LotRoom({ initialLot, initialBids }: Props) {
           ) : (
             <p className="display text-lg text-muted italic">Nenhum lance ainda. O primeiro abre em {money(lot.starting_bid)}.</p>
           )}
-          {initialBids.next ? <p className="text-xs text-muted">Mostrando os lances mais recentes.</p> : null}
+          <p className="flex flex-wrap gap-x-2 text-xs text-muted">
+            {initialBids.next ? <span>Mostrando os lances mais recentes.</span> : null}
+            <Link href={`/lotes/${lot.id}/auditoria`} className="ink-link pb-0.5 text-foreground">
+              Auditar o histórico completo
+            </Link>
+          </p>
         </section>
       </div>
     </article>
