@@ -31,8 +31,8 @@ export default async function ReceiptPage({ params }: PageProps<"/comprovante/[t
       </div>
     );
   }
-  // O nginx repassa o Host do visitante; só vira texto na impressão.
-  // shortcut: https para todo host que não seja localhost; atrás de TLS terminado em outro lugar, ler X-Forwarded-Proto.
-  const host = (await headers()).get("host");
-  return <ReceiptCard receipt={receipt} origin={`http${host?.startsWith("localhost") ? "" : "s"}://${host ?? "verz"}`} />;
+  // Host e esquema vêm do nginx (Host do visitante, X-Forwarded-Proto = $scheme); só viram texto na impressão.
+  const request = await headers();
+  const origin = `${request.get("x-forwarded-proto") ?? "http"}://${request.get("host") ?? "localhost"}`;
+  return <ReceiptCard receipt={receipt} origin={origin} />;
 }
