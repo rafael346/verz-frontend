@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api<User>("/api/auth/me/")
+    api<User | null>("/api/auth/me/")
       .then(setUser, () => setUser(null))
       .finally(() => setLoading(false));
   }, []);

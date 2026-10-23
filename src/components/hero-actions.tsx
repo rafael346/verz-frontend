@@ -17,7 +17,7 @@ export function HeroActions() {
           Criar conta para dar lances
         </span>
       ) : user ? (
-        <Link href="#vitrine" className={PRIMARY}>
+        <Link href="/lotes" className={PRIMARY}>
           Ver a vitrine
         </Link>
       ) : (

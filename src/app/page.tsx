@@ -1,4 +1,5 @@
 import { HeroActions } from "@/components/hero-actions";
+import { LiveHighlights } from "@/components/live-highlights";
 
 const STEPS = [
   {
@@ -47,22 +48,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section aria-labelledby="vitrine" className="flex flex-col gap-6">
-        <div className="flex items-baseline justify-between gap-4 border-b border-border pb-3">
-          <h2 id="vitrine" className="display text-3xl">
-            Na vitrine
-          </h2>
-          <p className="kicker hidden sm:block">Ao vivo · Agendados · Encerrados</p>
-        </div>
-        <div className="grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-3">
-          {["001", "002", "003"].map((lot) => (
-            <div key={lot} className="flex min-h-36 flex-col justify-between bg-card p-6 sm:min-h-56">
-              <p className="kicker figures">Lote {lot}</p>
-              <p className="display text-xl text-muted italic">A primeira sessão abre em breve.</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <LiveHighlights />
 
       <section id="como-funciona" aria-labelledby="como-funciona-titulo" className="scroll-mt-8">
         <h2 id="como-funciona-titulo" className="display border-b border-border pb-3 text-3xl">

@@ -28,6 +28,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="pt-BR" suppressHydrationWarning className="h-full antialiased">
+      <head>
+        {/* Hora do servidor nesta resposta: as contagens regressivas corrigem o relógio do visitante (lib/clock.ts). */}
+        {/* eslint-disable-next-line react-hooks/purity -- Server Component renderizado a cada requisição: o carimbo é a hora desta resposta */}
+        <meta name="server-time" content={String(Date.now())} />
+      </head>
       <body className="flex min-h-full flex-col font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange nonce={nonce}>
           <AuthProvider>
