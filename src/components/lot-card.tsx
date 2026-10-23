@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { bidsCount, clockTime, lotNumber, money } from "@/lib/format";
 import type { Lot } from "@/lib/lots";
 
@@ -61,11 +63,11 @@ function When({ lot }: { lot: Lot }) {
   );
 }
 
-/** Lote como uma página de catálogo: obra emoldurada, ficha técnica e o preço da fase em que está. */
+/** Lote como uma página de catálogo: obra emoldurada, ficha técnica e o preço da fase em que está; abre a sala do lote. */
 export function LotCard({ lot, eager = false }: { lot: Lot; eager?: boolean }) {
   const credit = [lot.date, lot.medium].filter(Boolean).join(" · ");
   return (
-    <article className="flex w-full flex-col bg-card">
+    <article className="group relative flex w-full flex-col bg-card">
       {/* overflow-hidden: sem ele, uma obra alta (um rolo japonês) estica a moldura e desalinha a grade. */}
       <div className="flex aspect-[4/5] items-center justify-center overflow-hidden border-b border-border bg-background p-6 sm:p-8">
         {/* eslint-disable-next-line @next/next/no-img-element -- a imagem já é uma cópia servida pela API, na mesma origem e com cache de 1 dia */}
@@ -90,7 +92,15 @@ export function LotCard({ lot, eager = false }: { lot: Lot; eager?: boolean }) {
             </p>
           ) : null}
         </div>
-        <h3 className="display mt-2 line-clamp-2 text-xl leading-snug">{lot.title}</h3>
+        <h3 className="display mt-2 line-clamp-2 text-xl leading-snug">
+          {/* Link esticado (after:inset-0): o cartão todo abre a sala, e o leitor de tela ouve um link só, com o título. */}
+          <Link
+            href={`/lotes/${lot.id}`}
+            className="decoration-1 underline-offset-4 after:absolute after:inset-0 group-hover:underline"
+          >
+            {lot.title}
+          </Link>
+        </h3>
         <p title={lot.artist || undefined} className="mt-1 truncate text-sm">
           {lot.artist || "Autoria desconhecida"}
         </p>

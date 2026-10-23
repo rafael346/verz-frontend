@@ -8,6 +8,11 @@ import { primaryButton } from "./field";
 import { ThemeToggle } from "./theme-toggle";
 
 const ROLE_LABEL = { seller: "Leiloeiro", bidder: "Licitante" } as const;
+const SELLER_LINKS = [{ href: "/painel", label: "Painel" }];
+const BIDDER_LINKS = [
+  { href: "/carteira", label: "Carteira" },
+  { href: "/arremates", label: "Meus arremates" },
+];
 
 export function Header() {
   const { user, loading, logout } = useAuth();
@@ -34,18 +39,23 @@ export function Header() {
           </span>
           <span className="kicker mt-1.5">Casa de Leilões</span>
         </Link>
-        <nav aria-label="Principal" className="order-last flex w-full items-center gap-6 border-t border-border pt-3 text-sm sm:order-none sm:w-auto sm:border-0 sm:pt-0">
+        <nav aria-label="Principal" className="order-last flex w-full flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-3 text-sm sm:order-none sm:w-auto sm:border-0 sm:pt-0">
           <Link href="/lotes" aria-current={pathname.startsWith("/lotes") ? "page" : undefined} className="ink-link pb-0.5">
             Vitrine
           </Link>
           <Link href="/#como-funciona" className="ink-link pb-0.5">
             Como funciona
           </Link>
-          {user?.role === "seller" ? (
-            <Link href="/painel" aria-current={pathname.startsWith("/painel") ? "page" : undefined} className="ink-link pb-0.5">
-              Painel
+          {(user?.role === "seller" ? SELLER_LINKS : user?.role === "bidder" ? BIDDER_LINKS : []).map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={pathname.startsWith(link.href) ? "page" : undefined}
+              className="ink-link pb-0.5 whitespace-nowrap"
+            >
+              {link.label}
             </Link>
-          ) : null}
+          ))}
         </nav>
         <div className="flex min-h-9 items-center gap-4 text-sm">
           {loading ? null : user ? (

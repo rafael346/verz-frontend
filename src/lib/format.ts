@@ -40,3 +40,10 @@ export function lotNumber(id: number): string {
 export function bidsCount(n: number): string {
   return n === 1 ? "1 lance" : `${n} lances`;
 }
+
+const AMOUNT = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** Valor para um campo em reais, sem o "R$": "1.050,00" (o formato que o `parseMoney` lê de volta). */
+export function amountInput(value: string): string {
+  return AMOUNT.format(Number(value));
+}

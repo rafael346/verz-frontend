@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { clockTime, lotNumber, money, remaining } from "./format";
+import { amountInput, clockTime, lotNumber, money, remaining } from "./format";
+import { parseMoney } from "./money-input";
 
 describe("money", () => {
   it("formata em reais, com espaço inseparável depois do R$", () => {
@@ -35,5 +36,12 @@ describe("lotNumber", () => {
   it("usa três dígitos, como num catálogo", () => {
     expect(lotNumber(7)).toBe("007");
     expect(lotNumber(1234)).toBe("1234");
+  });
+});
+
+describe("amountInput", () => {
+  it("formata para o campo e volta igual pelo parseMoney", () => {
+    expect(amountInput("1050.00")).toBe("1.050,00");
+    expect(parseMoney(amountInput("1234567.80"))).toBe("1234567.80");
   });
 });
