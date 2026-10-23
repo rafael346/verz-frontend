@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Tema por classe no <html> (next-themes), em vez do prefers-color-scheme fixo. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Contraste AA nos dois temas (texto e texto secundário sobre o fundo e os cartões). */
+:root {
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --muted: #57534e;
+  --card: #ffffff;
+  --border: #d6d3d1;
+  --accent: #b45309;
+}
+
+.dark {
+  --background: #0c0a09;
+  --foreground: #f5f5f4;
+  --muted: #a8a29e;
+  --card: #1c1917;
+  --border: #44403c;
+  --accent: #f59e0b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
