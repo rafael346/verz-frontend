@@ -104,6 +104,13 @@ describe("api", () => {
     expect([offline.status, offline.message]).toEqual([0, expect.stringMatching(/conexão/)]);
   });
 
+  it("em 503 usa o detail do backend; sem ele, a mensagem genérica", async () => {
+    mockFetch(reply(503, { detail: "O catálogo do museu está indisponível no momento." }), reply(503));
+
+    expect((await failure(api("/a/"))).message).toBe("O catálogo do museu está indisponível no momento.");
+    expect((await failure(api("/b/"))).message).toMatch(/servidor/);
+  });
+
   it("devolve null em 204", async () => {
     mockFetch(new Response(null, { status: 204 }));
     document.cookie = "csrftoken=t; path=/";

@@ -31,6 +31,8 @@ function firstMessage(value: unknown): string | null {
 function messageFor(status: number, body: ErrorBody): string {
   if (status === 0) return "Sem conexão com o servidor. Verifique sua internet e tente de novo.";
   if (status === 429) return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
+  // 503 com detail é indisponibilidade explicada pelo próprio backend (ex.: acervo do Met fora do ar).
+  if (status === 503 && typeof body?.detail === "string") return body.detail;
   if (status >= 500) return "O servidor não respondeu como esperado. Tente de novo em instantes.";
   return (
     firstMessage(body?.detail) ??

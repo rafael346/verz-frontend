@@ -41,6 +41,11 @@ export function Header() {
           <Link href="/#como-funciona" className="ink-link pb-0.5">
             Como funciona
           </Link>
+          {user?.role === "seller" ? (
+            <Link href="/painel" aria-current={pathname.startsWith("/painel") ? "page" : undefined} className="ink-link pb-0.5">
+              Painel
+            </Link>
+          ) : null}
         </nav>
         <div className="flex min-h-9 items-center gap-4 text-sm">
           {loading ? null : user ? (

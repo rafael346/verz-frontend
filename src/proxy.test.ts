@@ -22,6 +22,8 @@ describe("CSP", () => {
     expect(Object.values(csp).join(";")).not.toMatch(/unsafe-inline|unsafe-eval/);
     expect(csp["frame-ancestors"]).toBe("frame-ancestors 'none'");
     expect(csp["object-src"]).toBe("object-src 'none'");
+    // Prévia das obras na busca do painel vem direto do Met; nenhum outro host externo.
+    expect(csp["img-src"]).toBe("img-src 'self' blob: data: https://images.metmuseum.org");
   });
 
   it("gera um nonce novo a cada requisição", () => {

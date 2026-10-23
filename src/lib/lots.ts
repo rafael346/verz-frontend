@@ -61,3 +61,33 @@ export function showcaseHref({ slug, q, page }: { slug: PhaseSlug; q: string; pa
   const text = query.toString();
   return text ? `/lotes?${text}` : "/lotes";
 }
+
+/** Lote no painel do leiloeiro (`/api/lots/mine/`). */
+export type SellerLot = Lot & {
+  external_id: number;
+  status: "open" | "cancelled" | "settled";
+  created_at: string;
+  result: { sold: boolean; amount: string | null } | null;
+};
+
+/** Obra do acervo do Met (`/api/catalog/search/`). */
+export type CatalogItem = {
+  external_id: number;
+  title: string;
+  artist: string;
+  date: string;
+  medium: string;
+  dimensions: string;
+  culture: string;
+  department: string;
+  image_url: string;
+  source_url: string;
+};
+
+export type CatalogPage = { total: number; next_offset: number | null; items: CatalogItem[] };
+
+/** URL absoluta de paginação do DRF → caminho na mesma origem. */
+export function pathOf(url: string): string {
+  const parsed = new URL(url, "http://localhost");
+  return parsed.pathname + parsed.search;
+}
