@@ -3,39 +3,51 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import { ApiError } from "@/lib/api";
-
 import { useAuth } from "./auth-provider";
 import { Field, FormAlert, SubmitButton } from "./field";
+import { useFormErrors } from "./use-form-errors";
 
 export function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [fields, setFields] = useState<Record<string, string>>({});
+  const { formRef, general, fields, clear, showFields, fail } = useFormErrors();
   const [sending, setSending] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "").trim();
+    const password = String(form.get("password") ?? "");
+    const missing = {
+      ...(email ? {} : { email: "Informe seu e-mail." }),
+      ...(password ? {} : { password: "Informe sua senha." }),
+    };
+    if (Object.keys(missing).length) return showFields(missing);
+
     setSending(true);
-    setError(null);
-    setFields({});
+    clear();
     try {
-      await login(String(form.get("email")), String(form.get("password")));
+      await login(email, password);
       router.push("/");
     } catch (failure) {
-      const apiError = failure instanceof ApiError ? failure : new ApiError(0, null);
-      setError(apiError.message);
-      setFields(apiError.fieldErrors());
+      fail(failure);
       setSending(false);
     }
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-      {error ? <FormAlert>{error}</FormAlert> : null}
-      <Field label="E-mail" name="email" type="email" autoComplete="email" required error={fields.email} />
+    <form ref={formRef} onSubmit={submit} className="flex flex-col gap-4" noValidate>
+      {general ? <FormAlert>{general}</FormAlert> : null}
+      <Field
+        label="E-mail"
+        name="email"
+        type="email"
+        autoComplete="email"
+        spellCheck={false}
+        placeholder="nome@exemplo.com"
+        required
+        error={fields.email}
+      />
       <Field
         label="Senha"
         name="password"

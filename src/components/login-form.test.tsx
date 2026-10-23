@@ -35,6 +35,32 @@ describe("LoginForm", () => {
     expect(screen.getByRole("button", { name: "Entrar" })).toBeEnabled();
   });
 
+  it("sem preencher, explica o que falta, não chama o servidor e foca o primeiro campo", async () => {
+    const calls = fakeApi({});
+    renderWithProviders(<LoginForm />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
+
+    const email = screen.getByLabelText("E-mail");
+    expect(email).toHaveAccessibleDescription("Informe seu e-mail.");
+    expect(screen.getByLabelText("Senha")).toHaveAccessibleDescription("Informe sua senha.");
+    expect(email).toHaveFocus();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(calls.filter((c) => c.key.startsWith("POST"))).toEqual([]);
+  });
+
+  it("com erro do servidor preso ao campo, não repete um aviso genérico", async () => {
+    fakeApi({ "POST /api/auth/login/": () => json(400, { email: ["Informe um endereço de email válido."] }) });
+    renderWithProviders(<LoginForm />);
+
+    await userEvent.type(screen.getByLabelText("E-mail"), "ana@");
+    await userEvent.type(screen.getByLabelText("Senha"), "senha-forte-123");
+    await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
+
+    await waitFor(() => expect(screen.getByLabelText("E-mail")).toHaveFocus());
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("desabilita o botão enquanto envia", async () => {
     let release: (r: Response) => void = () => {};
     fakeApi({ "POST /api/auth/login/": () => json(200, {}) });

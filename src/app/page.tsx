@@ -1,11 +1,85 @@
+import { HeroActions } from "@/components/hero-actions";
+
+const STEPS = [
+  {
+    numeral: "I",
+    title: "Deposite saldo",
+    text: "O saldo é simulado. Enquanto você lidera um lote, o valor fica reservado; se alguém cobrir, ele volta na hora.",
+  },
+  {
+    numeral: "II",
+    title: "Dê lances ao vivo",
+    text: "A sala atualiza sozinha. Um lance nos últimos dois minutos prorroga o pregão, então ninguém arremata no susto.",
+  },
+  {
+    numeral: "III",
+    title: "Arremate",
+    text: "Ao encerrar, o valor sai da sua carteira e você recebe um comprovante com link para compartilhar.",
+  },
+  {
+    numeral: "IV",
+    title: "Audite",
+    text: "Cada lance é selado e encadeado ao anterior. Qualquer pessoa confere se o histórico de um lote foi alterado.",
+  },
+];
+
+function sessionLabel() {
+  const month = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date());
+  return `Sessão contínua · ${month}`;
+}
+
 export default function Home() {
   return (
-    <section className="flex flex-col gap-3">
-      <h1 className="text-3xl font-semibold tracking-tight">Leilões de arte ao vivo</h1>
-      <p className="max-w-prose text-muted">
-        Obras em domínio público do Metropolitan Museum, com lances ao vivo e histórico que qualquer pessoa pode
-        auditar. A vitrine dos lotes chega na próxima etapa.
-      </p>
-    </section>
+    <div className="flex flex-col gap-24">
+      <section className="grid gap-10 pt-6 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+        <div>
+          <p className="kicker">{sessionLabel()}</p>
+          <h1 className="display mt-5 text-[2.6rem] leading-[1.04] font-light sm:text-6xl lg:text-7xl">
+            Obras-primas em domínio público, <em className="font-normal text-accent">arrematadas ao vivo.</em>
+          </h1>
+        </div>
+        <div className="flex flex-col gap-6 lg:pb-3">
+          <p className="max-w-md text-lg leading-relaxed text-muted">
+            Pinturas, gravuras e objetos do acervo aberto do Metropolitan Museum, em lotes com lance inicial, incremento
+            e hora para acabar. O histórico de cada lote é público e verificável.
+          </p>
+          <HeroActions />
+        </div>
+      </section>
+
+      <section aria-labelledby="vitrine" className="flex flex-col gap-6">
+        <div className="flex items-baseline justify-between gap-4 border-b border-border pb-3">
+          <h2 id="vitrine" className="display text-3xl">
+            Na vitrine
+          </h2>
+          <p className="kicker hidden sm:block">Ao vivo · Agendados · Encerrados</p>
+        </div>
+        <div className="grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-3">
+          {["001", "002", "003"].map((lot) => (
+            <div key={lot} className="flex min-h-36 flex-col justify-between bg-card p-6 sm:min-h-56">
+              <p className="kicker figures">Lote {lot}</p>
+              <p className="display text-xl text-muted italic">A primeira sessão abre em breve.</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="como-funciona" aria-labelledby="como-funciona-titulo" className="scroll-mt-8">
+        <h2 id="como-funciona-titulo" className="display border-b border-border pb-3 text-3xl">
+          Como funciona
+        </h2>
+        <ol className="grid gap-x-10 gap-y-8 pt-8 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((step) => (
+            <li key={step.numeral} className="flex flex-col gap-3">
+              <span aria-hidden className="display text-4xl text-accent italic">
+                {step.numeral}
+              </span>
+              <h3 className="font-semibold">{step.title}</h3>
+              <p className="text-sm leading-relaxed text-muted">{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
   );
 }

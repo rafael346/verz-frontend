@@ -10,7 +10,7 @@ function reply(status: number, body?: unknown) {
 }
 
 function mockFetch(...responses: Array<Response | (() => Response)>) {
-  const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => {
+  const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () => {
     const next = responses.shift();
     if (!next) throw new Error("fetch inesperado");
     return typeof next === "function" ? next() : next;

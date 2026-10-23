@@ -36,6 +36,20 @@ describe("RegisterForm", () => {
     expect(screen.getByLabelText(/Licitante/)).toBeChecked();
   });
 
+  it("pede uma senha de pelo menos 10 caracteres antes de enviar", async () => {
+    const calls = fakeApi({});
+    renderWithProviders(<RegisterForm />);
+
+    await userEvent.type(screen.getByLabelText("E-mail"), "leo@example.com");
+    await userEvent.type(screen.getByLabelText("Senha"), "curta");
+    await userEvent.click(screen.getByRole("button", { name: "Criar conta" }));
+
+    const password = screen.getByLabelText("Senha");
+    expect(password).toHaveAccessibleDescription("A senha precisa ter pelo menos 10 caracteres.");
+    expect(password).toHaveFocus();
+    expect(calls.filter((c) => c.key.startsWith("POST"))).toEqual([]);
+  });
+
   it("mostra o erro do servidor junto ao campo", async () => {
     fakeApi({ "POST /api/auth/register/": () => json(400, { email: ["Este e-mail já está cadastrado."] }) });
     renderWithProviders(<RegisterForm />);

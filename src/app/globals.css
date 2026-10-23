@@ -3,41 +3,169 @@
 /* Tema por classe no <html> (next-themes), em vez do prefers-color-scheme fixo. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Contraste AA nos dois temas (texto e texto secundário sobre o fundo e os cartões). */
+/*
+ * Identidade "catálogo de casa de leilão" (D22): papel, tinta e vermelho-sangue de dia;
+ * sala de galeria com luz baixa à noite. Contraste AA (texto) em todas as combinações usadas.
+ */
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
-  --muted: #57534e;
-  --card: #ffffff;
-  --border: #d6d3d1;
-  --accent: #b45309;
+  --paper: #f5efe4;
+  --sheet: #fbf7ef;
+  --ink: #1b1714;
+  --ink-soft: #5b5148;
+  --rule: #d8ccb9;
+  --accent: #8a1c12;
+  --accent-ink: #fbf7ef;
+  --accent-hover: #6f160e;
+  --live: #1f6b45;
 }
 
 .dark {
-  --background: #0c0a09;
-  --foreground: #f5f5f4;
-  --muted: #a8a29e;
-  --card: #1c1917;
-  --border: #44403c;
-  --accent: #f59e0b;
+  --paper: #13100d;
+  --sheet: #1b1713;
+  --ink: #efe7da;
+  --ink-soft: #a99d8d;
+  --rule: #3a322a;
+  --accent: #e2583f;
+  --accent-ink: #13100d;
+  --accent-hover: #f07058;
+  --live: #4fbf86;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-card: var(--card);
-  --color-border: var(--border);
+  --color-background: var(--paper);
+  --color-card: var(--sheet);
+  --color-foreground: var(--ink);
+  --color-muted: var(--ink-soft);
+  --color-border: var(--rule);
   --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-hover: var(--accent-hover);
+  --color-live: var(--live);
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Fraunces Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+html {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
+  font-feature-settings: "kern", "liga";
+  text-rendering: optimizeLegibility;
+}
+
+a,
+button,
+label,
+input {
+  touch-action: manipulation; /* sem atraso de duplo toque */
+  -webkit-tap-highlight-color: transparent; /* o retorno de toque é o :active do .pressable */
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 :focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
+}
+
+@layer components {
+  /* Rótulos de catálogo: versalete com espaçamento, como "LOTE 012". */
+  .kicker {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* Títulos em serifa com tamanho óptico: grande fica delicado, pequeno fica firme. */
+  .display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.015em;
+    font-variation-settings: "SOFT" 50;
+    text-wrap: balance;
+  }
+
+  /* Valores em dinheiro alinham dígito com dígito numa lista. */
+  .figures {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Filete duplo dos cabeçalhos de catálogo. */
+  .double-rule {
+    border-top: 1px solid var(--rule);
+    box-shadow: 0 3px 0 -2px var(--rule);
+  }
+
+  /* Pressionar dá retorno imediato; soltar volta rápido (só transform, sem relayout). */
+  .pressable {
+    transition:
+      transform 160ms var(--ease-out),
+      background-color 150ms ease,
+      color 150ms ease;
+  }
+  .pressable:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Sublinhado que nasce da esquerda no hover, só onde existe mouse de verdade (só transform: sem repintura). */
+  .ink-link {
+    position: relative;
+  }
+  .ink-link::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 220ms var(--ease-out);
+  }
+  .ink-link[aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ink-link:hover::after {
+      transform: scaleX(1);
+    }
+  }
+}
+
+/* Link dentro de texto corrido: sublinhado tipográfico, que quebra de linha junto com o texto. */
+@layer components {
+  .text-link {
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--rule);
+    transition: text-decoration-color 150ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .text-link:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable,
+  .ink-link::after {
+    transition-duration: 0ms;
+  }
+  .pressable:active:not(:disabled) {
+    transform: none;
+  }
 }
