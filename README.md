@@ -10,6 +10,8 @@ Os arquivos do Docker Compose ficam no `verz-backend`, e o README de lá explica
 `.env.docker`).
 
 - **Tudo em containers:** em `verz-backend`, `docker compose up --build` e abra `http://localhost:8080`.
+- **Dados de demonstração:** em `verz-backend`, `docker compose exec backend python manage.py seed_demo`. Contas,
+  senha e o que cada lote mostra estão na seção "Dados de demonstração" do README do backend.
 - **Front com recarga automática:** aqui, `npm install` e `npm run dev`; em `verz-backend`,
   `FRONTEND_UPSTREAM=host.docker.internal:3000 docker compose up db backend worker nginx`; abra `http://localhost:8080`.
 
