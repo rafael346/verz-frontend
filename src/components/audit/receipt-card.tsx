@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Receipt } from "@/lib/audit";
 import { clockTime, lotNumber, money } from "@/lib/format";
 
-import { Check } from "./audit-report";
+import { CancellationNote, Check } from "./audit-report";
 import { CopyLink } from "./copy-link";
 import { PrintButton } from "./print-button";
 
@@ -27,7 +27,7 @@ export function ReceiptCard({ receipt, origin }: { receipt: Receipt; origin: str
       <header className="flex flex-col gap-3">
         <p className="kicker figures">Comprovante de arremate · Lote {lotNumber(receipt.lot.id)}</p>
         <h1 data-valid={valid || undefined} className="display text-4xl font-light text-accent data-valid:text-foreground sm:text-5xl">
-          {valid ? "Comprovante autêntico" : "Comprovante não confere"}
+          {!valid ? "Comprovante não confere" : receipt.cancellation ? "Arremate cancelado" : "Comprovante autêntico"}
         </h1>
       </header>
 
@@ -42,6 +42,8 @@ export function ReceiptCard({ receipt, origin }: { receipt: Receipt; origin: str
           .
         </p>
       ) : null}
+
+      {receipt.cancellation ? <CancellationNote cancellation={receipt.cancellation} /> : null}
 
       <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-6">
         <div className="flex aspect-square items-center justify-center overflow-hidden border border-border bg-background p-2">

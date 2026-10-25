@@ -1,5 +1,6 @@
 /** Tipos da auditoria pública e do comprovante (D18, D19). */
 
+import type { Cancellation } from "./lots";
 import type { LiveLot } from "./room";
 
 export type AuditBid = {
@@ -12,7 +13,14 @@ export type AuditBid = {
   valid: boolean;
 };
 
-export type Audit = { lot: LiveLot; intact: boolean; problems: string[]; head_hash: string; bids: AuditBid[] };
+export type Audit = {
+  lot: LiveLot;
+  intact: boolean;
+  problems: string[];
+  head_hash: string;
+  cancellation: Cancellation | null;
+  bids: AuditBid[];
+};
 
 export type Receipt = {
   token: string;
@@ -23,6 +31,7 @@ export type Receipt = {
   lot: { id: number; title: string; artist: string; image_url: string };
   authentic: boolean;
   audit: { intact: boolean; head_matches: boolean; url: string };
+  cancellation: Cancellation | null;
 };
 
 /** Hash de 64 caracteres em forma de leitura: começo e fim, como se confere um número de série. */

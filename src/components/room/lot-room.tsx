@@ -66,7 +66,8 @@ const CONNECTION_LABEL: Record<Connection, string> = {
 
 function Outcome({ lot, standing }: { lot: LiveLot; standing: Standing | null }) {
   if (lot.status === "cancelled") {
-    return <p className="display text-xl italic">Este lote foi cancelado pelo leiloeiro.</p>;
+    const reason = lot.cancellation?.reason;
+    return <p className="display text-xl italic">Este lote foi cancelado pelo leiloeiro{reason ? `: ${reason}` : "."}</p>;
   }
   if (lot.status !== "settled") {
     return <p className="display text-xl text-muted italic">Pregão encerrado. Apurando o resultado…</p>;
@@ -126,7 +127,8 @@ export function LotRoom({ initialLot, initialBids }: Props) {
   const connection = useLotStream(initialLot.id, dispatch);
   const now = useSyncExternalStore(subscribeClock, clockNow, () => null);
   const phase = now === null ? lot.phase : phaseAt(lot, now);
-  const open = lot.status !== "cancelled" && lot.status !== "settled" && phase === "live";
+  const cancelled = lot.status === "cancelled";
+  const open = !cancelled && lot.status !== "settled" && phase === "live";
 
   const bidder = user?.role === "bidder";
   const [standing, setStanding] = useState<Standing | null>(null);
@@ -161,7 +163,7 @@ export function LotRoom({ initialLot, initialBids }: Props) {
 
   const isMine = (bid: Bid) => bid.is_you || (standing !== null && bid.bidder_alias === standing.alias);
   const credit = [lot.date, lot.medium, lot.dimensions].filter(Boolean);
-  const label = lot.status === "cancelled" ? "Cancelado" : PHASE_LABEL[phase];
+  const label = cancelled ? "Cancelado" : PHASE_LABEL[phase];
 
   // grid-cols-1: sem ele a coluna implícita cresce até a largura da imagem (720 px) e a página transborda no celular.
   return (
@@ -205,16 +207,20 @@ export function LotRoom({ initialLot, initialBids }: Props) {
 
         <dl className="grid grid-cols-2 gap-x-6 border-y border-border py-5">
           <div className="flex flex-col gap-1">
-            <dt className="kicker">{lot.current_bid ? (phase === "ended" ? "Lance final" : "Lance atual") : "Lance inicial"}</dt>
+            <dt className="kicker">
+              {!lot.current_bid ? "Lance inicial" : cancelled ? "Último lance" : phase === "ended" ? "Lance final" : "Lance atual"}
+            </dt>
             <dd className="figures display text-3xl">{money(lot.current_bid ?? lot.starting_bid)}</dd>
             <dd className="text-xs text-muted">
               {bidsCount(lot.bid_count)} · incremento de {money(lot.min_increment)}
             </dd>
           </div>
           <div className="flex flex-col gap-1 text-right">
-            <dt className="kicker">{phase === "scheduled" ? "Abre" : phase === "live" ? "Termina" : "Encerrou"}</dt>
+            <dt className="kicker">{cancelled ? "Cancelado" : phase === "scheduled" ? "Abre" : phase === "live" ? "Termina" : "Encerrou"}</dt>
             <dd className="text-sm">
-              {phase === "scheduled" ? (
+              {cancelled ? (
+                lot.cancellation ? <time dateTime={lot.cancellation.cancelled_at}>{clockTime(lot.cancellation.cancelled_at)}</time> : null
+              ) : phase === "scheduled" ? (
                 <Countdown to={lot.starts_at} />
               ) : phase === "live" && open ? (
                 <Countdown to={lot.ends_at} urgentHint="Um lance agora prorroga o pregão." />
@@ -229,10 +235,10 @@ export function LotRoom({ initialLot, initialBids }: Props) {
           {open ? notice : null}
         </p>
 
-        {phase === "ended" || lot.status === "cancelled" || lot.status === "settled" ? <Outcome lot={lot} standing={standing} /> : null}
+        {phase === "ended" || cancelled || lot.status === "settled" ? <Outcome lot={lot} standing={standing} /> : null}
         {phase === "scheduled" ? <p className="text-sm text-muted">Os lances abrem em {clockTime(lot.starts_at)}.</p> : null}
 
-        {lot.status !== "cancelled" ? (
+        {!cancelled ? (
           <Participation
             lot={lot}
             open={open}

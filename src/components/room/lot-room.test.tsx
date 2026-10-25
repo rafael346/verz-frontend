@@ -244,8 +244,14 @@ describe("LotRoom", () => {
     fakeApi({ "GET /api/auth/me/": () => new Response(null, { status: 204 }) });
     renderRoom();
 
-    FakeEventSource.last!.emit("cancelled", { type: "cancelled", lot: { ...lot(), status: "cancelled" } });
+    FakeEventSource.last!.emit("cancelled", {
+      type: "cancelled",
+      lot: { ...lot(), status: "cancelled", cancellation: { reason: "A obra foi retirada.", refunded: null, cancelled_at: new Date().toISOString() } },
+    });
 
-    expect(screen.getByText(/Este lote foi cancelado/)).toBeInTheDocument();
+    expect(screen.getByText("Este lote foi cancelado pelo leiloeiro: A obra foi retirada.")).toBeInTheDocument();
+    // Nada de "lance atual" nem contagem depois do cancelamento.
+    expect(screen.getAllByRole("term").map((term) => term.textContent)).toEqual(["Último lance", "Cancelado"]);
+    expect(screen.queryByRole("button", { name: "Dar lance" })).not.toBeInTheDocument();
   });
 });

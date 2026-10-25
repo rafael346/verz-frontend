@@ -62,12 +62,17 @@ export function showcaseHref({ slug, q, page }: { slug: PhaseSlug; q: string; pa
   return text ? `/lotes?${text}` : "/lotes";
 }
 
+/** Cancelamento de um lote (D29): motivo, data e o valor estornado, se já tinha sido arrematado. */
+export type Cancellation = { reason: string; refunded: string | null; cancelled_at: string };
+
 /** Lote no painel do leiloeiro (`/api/lots/mine/`). */
 export type SellerLot = Lot & {
   external_id: number;
   status: "open" | "cancelled" | "settled";
   created_at: string;
   result: { sold: boolean; amount: string | null } | null;
+  cancellation: Cancellation | null;
+  refundable_until: string | null; // arrematado ainda cancelável (com estorno) até esta data
 };
 
 /** Obra do acervo do Met (`/api/catalog/search/`). */

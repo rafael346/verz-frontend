@@ -18,7 +18,7 @@ Os arquivos do Docker Compose ficam no `verz-backend`, e o README de lá explica
 ## Testes e checagens
 
 ```bash
-npm test            # Vitest + Testing Library (115 testes)
+npm test            # Vitest + Testing Library (119 testes)
 npx tsc --noEmit    # tipos (se faltar o tipo de uma rota nova: npx next typegen)
 npx eslint .        # lint
 ```
@@ -34,7 +34,7 @@ npx eslint .        # lint
 | `/comprovante/[token]` | quem tem o link | Comprovante do arremate, conferido a cada visita; imprimível. |
 | `/carteira` | licitante | Total, comprometido, disponível e depósito simulado. |
 | `/arremates` | licitante | Lotes em disputa e encerrados, com o link do comprovante. |
-| `/painel` | leiloeiro | Balanço, criação de lote a partir do acervo do Met e acompanhamento dos lotes. |
+| `/painel` | leiloeiro | Balanço, criação de lote a partir do acervo do Met, acompanhamento e cancelamento (com estorno) dos lotes. |
 | `/entrar`, `/cadastro` | visitante | Login e cadastro (licitante ou leiloeiro). |
 
 **Como a sala fica ao vivo:** a página chega renderizada do servidor e abre um `EventSource` no SSE do lote. O

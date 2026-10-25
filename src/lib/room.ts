@@ -1,6 +1,6 @@
 /** Estado da sala ao vivo: o lote e o histórico, atualizados pelo SSE e pela resposta do próprio lance. */
 
-import type { Lot, Phase } from "./lots";
+import type { Cancellation, Lot, Phase } from "./lots";
 
 export type Bid = {
   sequence: number;
@@ -11,7 +11,7 @@ export type Bid = {
   is_you?: boolean;
 };
 
-export type LiveLot = Lot & { status?: "open" | "cancelled" | "settled" };
+export type LiveLot = Lot & { status?: "open" | "cancelled" | "settled"; cancellation?: Cancellation | null };
 
 /** `me` do backend: situação do licitante no lote (D20). */
 export type Standing = { status: "winning" | "outbid" | "none"; position: number | null; bidders: number; alias: string };

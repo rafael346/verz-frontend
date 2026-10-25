@@ -31,6 +31,8 @@ const lot = (overrides: Record<string, unknown>) => ({
   status: "open",
   created_at: "2026-10-23T12:00:00Z",
   result: null,
+  cancellation: null,
+  refundable_until: null,
   ...overrides,
 });
 
@@ -181,17 +183,63 @@ describe("SellerDashboard", () => {
     await waitFor(() => expect(calls.some((c) => c.key === "POST /api/lots/5/cancel/")).toBe(true));
   });
 
-  it("não oferece cancelar lote com lances", async () => {
-    sellerApi({}, [lot({ phase: "live", current_bid: "120.00", bid_count: 2 })]);
+  it("cancelar lote com lances pede o motivo e explica que o valor reservado é liberado", async () => {
+    const calls = sellerApi(
+      { "POST /api/lots/5/cancel/": () => json(200, lot({ status: "cancelled" })) },
+      [lot({ phase: "live", current_bid: "120.00", bid_count: 2 })],
+    );
     renderWithProviders(<SellerDashboard />);
 
-    await screen.findByText("Girassóis");
+    await userEvent.click(await screen.findByRole("button", { name: "Cancelar lote" }));
+    expect(screen.getByText(/valor reservado de quem está ganhando será liberado/)).toBeInTheDocument();
+    const confirm = screen.getByRole("button", { name: "Sim, cancelar" });
+    await userEvent.click(confirm); // sem motivo: erro junto ao campo, nada enviado
+    expect(screen.getByText("Informe o motivo: quem deu lance vai ver.")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Motivo/)).toHaveFocus();
+    expect(calls.some((c) => c.key === "POST /api/lots/5/cancel/")).toBe(false);
+
+    await userEvent.type(screen.getByLabelText(/Motivo/), "A obra foi retirada.");
+    expect(screen.getByText("20/200")).toBeInTheDocument();
+    await userEvent.click(confirm);
+
+    await waitFor(() =>
+      expect(calls.find((c) => c.key === "POST /api/lots/5/cancel/")?.body).toEqual({ reason: "A obra foi retirada." }),
+    );
+  });
+
+  it("arrematado no prazo pode ser cancelado, avisando do estorno", async () => {
+    sellerApi({}, [
+      lot({
+        phase: "ended",
+        status: "settled",
+        current_bid: "300.00",
+        bid_count: 3,
+        result: { sold: true, amount: "300.00" },
+        refundable_until: "2030-01-17T10:00:00Z",
+      }),
+    ]);
+    renderWithProviders(<SellerDashboard />);
+
+    expect(await screen.findByText(/Pode ser cancelado até/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Cancelar lote" }));
+    expect(screen.getByText("R$ 300,00 voltam para o arrematante e saem do seu saldo.")).toBeInTheDocument();
+  });
+
+  it("lote cancelado mostra o motivo e o estorno; encerrado sem lances não cancela", async () => {
+    sellerApi({}, [
+      lot({ status: "cancelled", cancellation: { reason: "A obra foi retirada.", refunded: "300.00", cancelled_at: "2030-01-12T10:00:00Z" } }),
+      lot({ id: 6, phase: "ended", bid_count: 0 }),
+    ]);
+    renderWithProviders(<SellerDashboard />);
+
+    expect(await screen.findByText("Cancelado: A obra foi retirada.")).toBeInTheDocument();
+    expect(screen.getByText("R$ 300,00 estornados ao arrematante")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cancelar lote" })).not.toBeInTheDocument();
   });
 
   it("mostra quando o cancelamento é recusado", async () => {
     sellerApi(
-      { "POST /api/lots/5/cancel/": () => json(400, { detail: "Lote com lances não pode ser cancelado." }) },
+      { "POST /api/lots/5/cancel/": () => json(400, { detail: "Este lote já foi cancelado." }) },
       [lot({})],
     );
     renderWithProviders(<SellerDashboard />);
@@ -199,6 +247,6 @@ describe("SellerDashboard", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Cancelar lote" }));
     await userEvent.click(screen.getByRole("button", { name: "Sim, cancelar" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Lote com lances não pode ser cancelado.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Este lote já foi cancelado.");
   });
 });

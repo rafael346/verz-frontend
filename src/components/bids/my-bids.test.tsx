@@ -55,6 +55,12 @@ describe("MyBids", () => {
             lot(3, { my_status: "won", phase: "ended", current_bid: "900.00", receipt_token: "tok-3", ends_at: new Date(Date.now() - HOUR).toISOString() }),
             lot(4, { my_status: "lost", phase: "ended", ends_at: new Date(Date.now() - HOUR).toISOString() }),
             lot(5, { my_status: "won", phase: "ended", receipt_token: null, ends_at: new Date(Date.now() - 1000).toISOString() }),
+            lot(6, {
+              my_status: "cancelled",
+              phase: "ended",
+              receipt_token: "tok-6",
+              cancellation: { reason: "A obra foi retirada.", refunded: "900.00", cancelled_at: new Date().toISOString() },
+            }),
           ]),
         ),
     });
@@ -71,7 +77,12 @@ describe("MyBids", () => {
     expect(ended.getByText("Emitindo o comprovante…")).toBeInTheDocument();
     expect(ended.getByRole("link", { name: "Ver comprovante" })).toHaveAttribute("href", "/comprovante/tok-3");
 
-    await userEvent.click(ended.getByRole("button", { name: "Copiar link do comprovante" }));
+    const cancelled = within(ended.getByText("Lote 006").closest("li")!);
+    expect(cancelled.getByText("Cancelado pelo leiloeiro: A obra foi retirada.")).toBeInTheDocument();
+    expect(cancelled.getByText("R$ 900,00 estornados para a sua carteira")).toBeInTheDocument();
+    expect(cancelled.getByRole("link", { name: /auditoria/ })).toHaveAttribute("href", "/lotes/6/auditoria");
+
+    await userEvent.click(ended.getAllByRole("button", { name: "Copiar link do comprovante" })[0]);
     expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/comprovante/tok-3`);
     expect(await ended.findByText("Link copiado")).toBeInTheDocument();
   });

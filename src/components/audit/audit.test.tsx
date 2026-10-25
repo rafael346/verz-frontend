@@ -15,6 +15,7 @@ const audit = (overrides: Partial<Audit> = {}): Audit => ({
   intact: true,
   problems: [],
   head_hash: H("b"),
+  cancellation: null,
   bids: [
     { sequence: 1, bidder_alias: "Licitante #A1", amount: "1000.00", created_at: "2026-10-23T13:00:00Z", prev_hash: H("0"), hash: H("a"), valid: true },
     { sequence: 2, bidder_alias: "Licitante #B2", amount: "1100.00", created_at: "2026-10-23T13:01:00Z", prev_hash: H("a"), hash: H("b"), valid: true },
@@ -31,6 +32,7 @@ const receipt = (overrides: Partial<Receipt> = {}): Receipt => ({
   lot: { id: 7, title: "Girassóis", artist: "Vincent van Gogh", image_url: "/api/lots/7/image/" },
   authentic: true,
   audit: { intact: true, head_matches: true, url: "/api/lots/7/audit/" },
+  cancellation: null,
   ...overrides,
 });
 
@@ -63,6 +65,15 @@ describe("AuditReport", () => {
     expect(within(rows[1]).getByText("Não confere")).toBeInTheDocument();
   });
 
+  it("lote cancelado mostra o motivo e o valor estornado", () => {
+    render(<AuditReport audit={audit({ cancellation: { reason: "A obra foi retirada.", refunded: "1100.00", cancelled_at: "2026-10-24T15:00:00Z" } })} />);
+
+    const note = screen.getByRole("note");
+    expect(note).toHaveTextContent("Lote cancelado em");
+    expect(note).toHaveTextContent("A obra foi retirada.");
+    expect(note).toHaveTextContent("R$ 1.100,00 estornados ao arrematante");
+  });
+
   it("lote sem lances diz isso em vez de uma lista vazia", () => {
     render(<AuditReport audit={audit({ bids: [] })} />);
     expect(screen.getByText(/Nenhum lance registrado/)).toBeInTheDocument();
@@ -81,6 +92,19 @@ describe("ReceiptCard", () => {
     expect(screen.getByText("Licitante #B2")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Auditar o histórico/ })).toHaveAttribute("href", "/lotes/7/auditoria");
     expect(screen.getByText("https://verz.example/comprovante/tok-7")).toBeInTheDocument(); // impresso
+  });
+
+  it("arremate cancelado: diz isso no título, com motivo e estorno", () => {
+    render(
+      <ReceiptCard
+        origin="https://verz.example"
+        receipt={receipt({ cancellation: { reason: "A obra foi retirada.", refunded: "1100.00", cancelled_at: "2026-10-24T15:00:00Z" } })}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Arremate cancelado");
+    expect(screen.getByRole("note")).toHaveTextContent("A obra foi retirada.");
+    expect(screen.getByRole("note")).toHaveTextContent("R$ 1.100,00 estornados ao arrematante");
   });
 
   it("assinatura inválida: não é autêntico", () => {

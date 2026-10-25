@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { api, ApiError } from "@/lib/api";
 import { lotNumber, money } from "@/lib/format";
-import type { Lot, Page } from "@/lib/lots";
+import type { Cancellation, Lot, Page } from "@/lib/lots";
 import { pathOf } from "@/lib/lots";
 
 import { CopyLink } from "../audit/copy-link";
@@ -13,7 +13,11 @@ import { useAuth } from "../auth-provider";
 import { Countdown } from "../countdown";
 import { FormAlert, primaryButton } from "../field";
 
-type Participation = Lot & { my_status: "winning" | "outbid" | "won" | "lost"; receipt_token: string | null };
+type Participation = Lot & {
+  my_status: "winning" | "outbid" | "won" | "lost" | "cancelled";
+  receipt_token: string | null;
+  cancellation: Cancellation | null;
+};
 
 const STATUS = {
   winning: "Você está ganhando",
@@ -48,7 +52,11 @@ function ReceiptLinks({ token }: { token: string }) {
 }
 
 function Row({ lot }: { lot: Participation }) {
-  const ended = lot.my_status === "won" || lot.my_status === "lost";
+  const ended = lot.my_status !== "winning" && lot.my_status !== "outbid";
+  const cancelled = lot.my_status === "cancelled";
+  // Lote cancelado some da vitrine (e a sala dá 404): o que resta para conferir é a auditoria.
+  const href = cancelled ? `/lotes/${lot.id}/auditoria` : `/lotes/${lot.id}`;
+  const action = cancelled ? "Ver a auditoria" : ended ? "Ver o lote" : "Ir para a sala";
   return (
     <li className="grid grid-cols-[4rem_minmax(0,1fr)] gap-4 border-b border-border py-5 sm:grid-cols-[5rem_minmax(0,1fr)_auto] sm:items-center">
       <div className="flex aspect-square items-center justify-center overflow-hidden bg-background p-1.5">
@@ -60,7 +68,16 @@ function Row({ lot }: { lot: Participation }) {
         <p className="display truncate text-xl" title={lot.title}>
           {lot.title}
         </p>
-        {lot.my_status === "won" ? (
+        {lot.my_status === "cancelled" ? (
+          <>
+            <p className="text-sm font-semibold break-words">
+              Cancelado pelo leiloeiro{lot.cancellation?.reason ? `: ${lot.cancellation.reason}` : ""}
+            </p>
+            {lot.cancellation?.refunded ? (
+              <p className="figures text-xs text-muted">{money(lot.cancellation.refunded)} estornados para a sua carteira</p>
+            ) : null}
+          </>
+        ) : lot.my_status === "won" ? (
           <>
             <p className="figures text-sm font-semibold">Arrematado por {money(lot.current_bid ?? lot.starting_bid)}</p>
             {lot.receipt_token ? (
@@ -86,15 +103,15 @@ function Row({ lot }: { lot: Participation }) {
         )}
       </div>
       <Link
-        href={`/lotes/${lot.id}`}
-        aria-label={`${ended ? "Ver o lote" : "Ir para a sala do lote"} ${lotNumber(lot.id)}`}
+        href={href}
+        aria-label={`${cancelled ? "Ver a auditoria do lote" : ended ? "Ver o lote" : "Ir para a sala do lote"} ${lotNumber(lot.id)}`}
         className={
           ended
             ? "ink-link col-span-2 self-start pb-0.5 text-sm sm:col-span-1 sm:self-center"
             : `${primaryButton} col-span-2 px-4 py-2 text-center text-sm sm:col-span-1`
         }
       >
-        {ended ? "Ver o lote" : "Ir para a sala"}
+        {action}
       </Link>
     </li>
   );
@@ -162,7 +179,7 @@ export function MyBids() {
   if (!bidder) return <Gate text="Esta página é dos licitantes. Os resultados dos seus lotes estão no painel." href="/painel" action="Ir para o painel" />;
 
   const open = lots?.filter((lot) => lot.my_status === "winning" || lot.my_status === "outbid") ?? [];
-  const ended = lots?.filter((lot) => lot.my_status === "won" || lot.my_status === "lost") ?? [];
+  const ended = lots?.filter((lot) => lot.my_status !== "winning" && lot.my_status !== "outbid") ?? [];
   return (
     <div className="flex flex-col gap-12">
       <header className="flex flex-col gap-3">

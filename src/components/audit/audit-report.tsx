@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { shortHash, type Audit } from "@/lib/audit";
 import { clockTime, lotNumber, money } from "@/lib/format";
+import type { Cancellation } from "@/lib/lots";
 
 /** "Confere" / "Não confere" com cor e símbolo; o símbolo é só visual, a palavra é o que se lê. */
 export function Check({ ok }: { ok: boolean }) {
@@ -10,6 +11,21 @@ export function Check({ ok }: { ok: boolean }) {
       <span aria-hidden>{ok ? "✓" : "✕"}</span>
       {ok ? "Confere" : "Não confere"}
     </span>
+  );
+}
+
+/** Cancelamento registrado (D29): data, motivo e o que foi estornado. Usado na auditoria e no comprovante. */
+export function CancellationNote({ cancellation }: { cancellation: Cancellation }) {
+  return (
+    <div role="note" className="flex flex-col gap-1 border-l-2 border-accent bg-card px-5 py-4 text-sm">
+      <p>
+        <span className="font-semibold">Lote cancelado em {clockTime(cancellation.cancelled_at)}</span>
+        {cancellation.reason ? `: ${cancellation.reason}` : "."}
+      </p>
+      {cancellation.refunded ? (
+        <p className="figures text-muted">{money(cancellation.refunded)} estornados ao arrematante</p>
+      ) : null}
+    </div>
   );
 }
 
@@ -31,6 +47,8 @@ export function AuditReport({ audit }: { audit: Audit }) {
             : "A verificação encontrou diferenças entre o que está registrado e o que foi selado."}
         </p>
       </header>
+
+      {audit.cancellation ? <CancellationNote cancellation={audit.cancellation} /> : null}
 
       {audit.problems.length ? (
         <div role="alert" className="flex flex-col gap-2 border-l-2 border-accent bg-card px-5 py-4">
