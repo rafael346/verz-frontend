@@ -86,18 +86,6 @@ export function ShowcaseEmpty({ state }: { state: ShowcaseState }) {
   );
 }
 
-export function ShowcaseUnavailable({ retryHref }: { retryHref: string }) {
-  return (
-    <div role="alert" className="flex flex-col items-start gap-4 border-l-2 border-accent bg-card px-6 py-10">
-      <p className="display text-2xl">A vitrine está indisponível no momento.</p>
-      <p className="text-sm text-muted">Não conseguimos falar com o servidor de lotes. Tente de novo em instantes.</p>
-      <Link href={retryHref} className="text-link text-sm">
-        Tentar de novo
-      </Link>
-    </div>
-  );
-}
-
 export function Pagination({ state, count }: { state: ShowcaseState; count: number }) {
   const pages = Math.ceil(count / PAGE_SIZE);
   if (pages <= 1) return null;

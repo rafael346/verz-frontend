@@ -16,6 +16,9 @@ const audit = (overrides: Partial<Audit> = {}): Audit => ({
   problems: [],
   head_hash: H("b"),
   cancellation: null,
+  bid_count: 2,
+  page: 1,
+  pages: 1,
   bids: [
     { sequence: 1, bidder_alias: "Licitante #A1", amount: "1000.00", created_at: "2026-10-23T13:00:00Z", prev_hash: H("0"), hash: H("a"), valid: true },
     { sequence: 2, bidder_alias: "Licitante #B2", amount: "1100.00", created_at: "2026-10-23T13:01:00Z", prev_hash: H("a"), hash: H("b"), valid: true },
@@ -51,7 +54,8 @@ describe("AuditReport", () => {
     expect(rows).toHaveLength(2);
     expect(within(rows[0]).getByText("Confere")).toBeInTheDocument();
     expect(screen.getByText(H("b"))).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Dados brutos/ })).toHaveAttribute("href", "/api/lots/7/audit/");
+    expect(screen.getByRole("link", { name: /Dados brutos/ })).toHaveAttribute("href", "/api/lots/7/audit/?page=1");
+    expect(screen.queryByText(/Página 1 de/)).not.toBeInTheDocument(); // uma página só: sem navegação
     expect(screen.getByRole("link", { name: /Voltar para a sala/ })).toHaveAttribute("href", "/lotes/7");
   });
 
@@ -74,8 +78,23 @@ describe("AuditReport", () => {
     expect(note).toHaveTextContent("R$ 1.100,00 estornados ao arrematante");
   });
 
+  it("lote com muitos lances: total do lote, página atual e navegação pela URL", () => {
+    const { unmount } = render(<AuditReport audit={audit({ bid_count: 60, page: 1, pages: 2 })} />);
+
+    expect(screen.getByText("60")).toBeInTheDocument(); // lances registrados: o lote todo, não só a página
+    expect(screen.getByText("Página 1 de 2")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Próximos lances" })).toHaveAttribute("href", "/lotes/7/auditoria?pagina=2");
+    expect(screen.queryByRole("link", { name: "Lances anteriores" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Dados brutos/ })).toHaveAttribute("href", "/api/lots/7/audit/?page=1");
+    unmount();
+
+    render(<AuditReport audit={audit({ bid_count: 60, page: 2, pages: 2 })} />);
+    expect(screen.getByRole("link", { name: "Lances anteriores" })).toHaveAttribute("href", "/lotes/7/auditoria");
+    expect(screen.queryByRole("link", { name: "Próximos lances" })).not.toBeInTheDocument();
+  });
+
   it("lote sem lances diz isso em vez de uma lista vazia", () => {
-    render(<AuditReport audit={audit({ bids: [] })} />);
+    render(<AuditReport audit={audit({ bids: [], bid_count: 0 })} />);
     expect(screen.getByText(/Nenhum lance registrado/)).toBeInTheDocument();
   });
 });

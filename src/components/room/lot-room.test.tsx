@@ -191,6 +191,8 @@ describe("LotRoom", () => {
 
     expect(await screen.findByText("Você foi superado")).toBeInTheDocument();
     expect(await screen.findByText("R$ 5.000,00")).toBeInTheDocument();
+    // Região ao vivo: o leitor de tela anuncia "superado" sem a pessoa navegar até a mensagem.
+    expect(screen.getByText("Você foi superado").closest('[aria-live="polite"]')).not.toBeNull();
   });
 
   it("prorrogação pelo anti-sniping é avisada", async () => {

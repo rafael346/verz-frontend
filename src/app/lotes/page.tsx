@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { LotGrid, Pagination, ShowcaseEmpty, ShowcaseToolbar, ShowcaseUnavailable } from "@/components/showcase";
+import { LotGrid, Pagination, ShowcaseEmpty, ShowcaseToolbar } from "@/components/showcase";
+import { Unavailable } from "@/components/unavailable";
 import type { Lot, Page } from "@/lib/lots";
 import { PHASES, readShowcaseParams, showcaseHref } from "@/lib/lots";
 import { BackendError, backendGet } from "@/lib/server-api";
@@ -24,12 +25,13 @@ export default async function ShowcasePage({ searchParams }: PageProps<"/lotes">
   if (state.q) query.set("q", state.q);
 
   let page: Page<Lot> | null = null;
-  let pageOutOfRange = false;
+  let failure: unknown = null;
   try {
     page = await backendGet<Page<Lot>>(`/api/lots/?${query}`);
   } catch (error) {
-    pageOutOfRange = error instanceof BackendError && error.status === 404 && state.page > 1;
+    failure = error;
   }
+  const pageOutOfRange = failure instanceof BackendError && failure.status === 404 && state.page > 1;
   // Página que não existe mais (os lotes mudaram de fase): volta para a primeira, sem tela de erro.
   if (pageOutOfRange) redirect(showcaseHref({ ...state, page: 1 }));
 
@@ -48,7 +50,7 @@ export default async function ShowcasePage({ searchParams }: PageProps<"/lotes">
       </header>
       <ShowcaseToolbar state={state} />
       {page === null ? (
-        <ShowcaseUnavailable retryHref={showcaseHref(state)} />
+        <Unavailable what="A vitrine" error={failure} retryHref={showcaseHref(state)} />
       ) : page.results.length ? (
         <section aria-labelledby="lotes-titulo">
           <h2 id="lotes-titulo" className="sr-only">

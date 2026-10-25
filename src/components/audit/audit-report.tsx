@@ -29,6 +29,32 @@ export function CancellationNote({ cancellation }: { cancellation: Cancellation 
   );
 }
 
+/** Páginas da lista de lances, pela URL (funciona sem JavaScript, como a vitrine). O veredito vale para o lote todo. */
+function AuditPages({ lotId, page, pages }: { lotId: number; page: number; pages: number }) {
+  const href = (n: number) => `/lotes/${lotId}/auditoria${n > 1 ? `?pagina=${n}` : ""}`;
+  return (
+    <nav aria-label="Páginas dos lances" className="flex items-center justify-between gap-4 pt-2 text-sm">
+      {page > 1 ? (
+        <Link href={href(page - 1)} rel="prev" className="ink-link pb-0.5">
+          Lances anteriores
+        </Link>
+      ) : (
+        <span />
+      )}
+      <span className="figures text-muted">
+        Página {page} de {pages}
+      </span>
+      {page < pages ? (
+        <Link href={href(page + 1)} rel="next" className="ink-link pb-0.5">
+          Próximos lances
+        </Link>
+      ) : (
+        <span />
+      )}
+    </nav>
+  );
+}
+
 /** Relatório público da auditoria: o servidor recalcula a cadeia de lances e o selo do lote a cada visita (D18). */
 export function AuditReport({ audit }: { audit: Audit }) {
   const { lot } = audit;
@@ -79,7 +105,7 @@ export function AuditReport({ audit }: { audit: Audit }) {
         <dl className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-col gap-1">
             <dt className="kicker">Lances registrados</dt>
-            <dd className="display figures text-3xl">{audit.bids.length}</dd>
+            <dd className="display figures text-3xl">{audit.bid_count}</dd>
           </div>
           <div className="flex min-w-0 flex-col gap-1">
             <dt className="kicker">Selo final da cadeia</dt>
@@ -122,6 +148,7 @@ export function AuditReport({ audit }: { audit: Audit }) {
         ) : (
           <p className="display text-lg text-muted italic">Nenhum lance registrado neste lote.</p>
         )}
+        {audit.pages > 1 ? <AuditPages lotId={lot.id} page={audit.page} pages={audit.pages} /> : null}
       </section>
 
       <nav aria-label="Auditoria" className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -131,8 +158,8 @@ export function AuditReport({ audit }: { audit: Audit }) {
           </Link>
         ) : null}
         {/* JSON cru: quem quiser guarda e compara depois, sem depender desta página. */}
-        <a href={`/api/lots/${lot.id}/audit/`} className="ink-link pb-0.5">
-          Dados brutos da auditoria (JSON)
+        <a href={`/api/lots/${lot.id}/audit/?page=${audit.page}`} className="ink-link pb-0.5">
+          Dados brutos da auditoria (JSON{audit.pages > 1 ? ", lances desta página" : ""})
         </a>
       </nav>
     </div>

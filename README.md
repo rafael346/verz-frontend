@@ -18,10 +18,40 @@ Os arquivos do Docker Compose ficam no `verz-backend`, e o README de lá explica
 ## Testes e checagens
 
 ```bash
-npm test            # Vitest + Testing Library (119 testes)
+npm test            # Vitest + Testing Library (124 testes)
 npx tsc --noEmit    # tipos (se faltar o tipo de uma rota nova: npx next typegen)
 npx eslint .        # lint
 ```
+
+## Testes ponta a ponta
+
+Repetem no navegador, a cada execução, os fluxos que importam: vitrine, cadastro e login, sala ao vivo com duas
+licitantes (lance que aparece na outra sem recarregar, "ganhando/superado", recusas), prorrogação nos últimos 2
+minutos, liquidação até o comprovante, carteira, cancelamento com estorno, e auditoria e comprovante públicos.
+
+Precisam da pilha do Docker no ar (`docker compose up -d` em `verz-backend`):
+
+```bash
+npx playwright install chromium   # uma vez só
+npm run e2e                       # a suíte (~60 s)
+npm run e2e:met                   # à parte: o leiloeiro busca no Met e cria um lote (depende do museu no ar)
+```
+
+- **Dados:** antes de começar, a suíte roda `python manage.py e2e_fixtures` no backend, que cria contas novas (senha
+  aleatória, só daquela execução) e lotes sob medida, sem depender do Met. Os testes de prorrogação e de liquidação
+  pedem o próprio lote na hora em que começam, porque têm relógio. O backend é procurado em `../verz-backend`
+  (ou em `VERZ_BACKEND_DIR`).
+- **Em todo teste:** o console precisa estar limpo e não pode haver rolagem horizontal. Vitrine, sala e auditoria
+  rodam também em 375 px (projeto `mobile`).
+- **Acessibilidade:** o `acessibilidade.spec.ts` roda o axe (regras WCAG 2.1 A/AA) em 11 telas, nos temas claro e
+  escuro. O que só um leitor de tela percebe (o que é anunciado e para onde vai o foco) está no roteiro
+  [`docs/leitor-de-tela.md`](docs/leitor-de-tela.md), para passar à mão com o NVDA.
+- **Um teste por vez:** vários mexem no saldo da mesma licitante; em paralelo, um leria o efeito do outro.
+- **Sem repetição automática:** teste instável se corrige. Em caso de falha, trace, captura e vídeo ficam em
+  `e2e/test-results/` (`npx playwright show-trace <arquivo>`), e o relatório em `playwright-report/`.
+- **Espere 1 minuto entre duas execuções:** as páginas de visitante da suíte usam cerca de 40 das 60 requisições por
+  minuto que a API permite a um visitante por IP. Duas execuções coladas esbarram no limite, e a página mostra
+  "Muitas páginas abertas em sequência". O limite não é afrouxado por causa dos testes.
 
 ## Telas
 

@@ -110,7 +110,10 @@ function Participation({ lot, open, standing, wallet, onPlaced }: {
     // Encerrado, o resultado (Outcome) substitui a disputa: nada de "você está ganhando" depois do fim.
     open ? (
       <div className="flex flex-col gap-4">
-        <StandingNote standing={standing} />
+        {/* Região ao vivo sempre presente: quem disputa sem ver a tela ouve "superado" quando outro lance chega. */}
+        <div aria-live="polite">
+          <StandingNote standing={standing} />
+        </div>
         <BidForm lot={lot} wallet={wallet} onPlaced={onPlaced} />
       </div>
     ) : null

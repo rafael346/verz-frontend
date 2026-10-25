@@ -19,6 +19,9 @@ export type Audit = {
   problems: string[];
   head_hash: string;
   cancellation: Cancellation | null;
+  bid_count: number; // do lote todo; `bids` traz só a página `page` (50 por página)
+  page: number;
+  pages: number;
   bids: AuditBid[];
 };
 

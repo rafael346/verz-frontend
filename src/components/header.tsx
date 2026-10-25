@@ -33,11 +33,13 @@ export function Header() {
         </div>
       </div>
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-end justify-between gap-x-8 gap-y-4 px-4 pt-6 pb-4 sm:px-6">
-        <Link href="/" className="group flex flex-col leading-none" aria-label="verz — página inicial">
+        {/* Sem aria-label: o nome do link é o texto visível (WCAG 2.5.3), e "página inicial" vai só para o leitor de tela. */}
+        <Link href="/" className="group flex flex-col leading-none">
           <span translate="no" className="display text-4xl font-medium italic">
             verz
           </span>
           <span className="kicker mt-1.5">Casa de Leilões</span>
+          <span className="sr-only">, página inicial</span>
         </Link>
         <nav aria-label="Principal" className="order-last flex w-full flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-3 text-sm sm:order-none sm:w-auto sm:border-0 sm:pt-0">
           <Link href="/lotes" aria-current={pathname.startsWith("/lotes") ? "page" : undefined} className="ink-link pb-0.5">

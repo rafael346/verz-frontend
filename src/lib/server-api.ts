@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 /**
  * Leitura da API no servidor (Server Components). No Compose, direto no serviço `backend`; no `next dev`, pelo nginx.
@@ -13,13 +13,26 @@ export class BackendError extends Error {
   }
 }
 
+/**
+ * Cabeçalhos da leitura no servidor. Repassa a sessão (só o `sessionid`): sem ela, toda página renderizada no servidor
+ * contaria no limite de visitante (60/min por IP), mesmo para quem está logado (D30).
+ */
+export function backendHeaders(forwardedFor: string | null, session: string | undefined): Record<string, string> {
+  return {
+    Accept: "application/json",
+    ...(forwardedFor ? { "X-Forwarded-For": forwardedFor } : {}),
+    ...(session ? { Cookie: `sessionid=${session}` } : {}),
+  };
+}
+
 export async function backendGet<T>(path: string): Promise<T> {
   const forwardedFor = (await headers()).get("x-forwarded-for");
+  const session = (await cookies()).get("sessionid")?.value;
   let response: Response;
   try {
     response = await fetch(`${BACKEND_URL}${path}`, {
       cache: "no-store", // lote ao vivo muda a cada lance
-      headers: { Accept: "application/json", ...(forwardedFor ? { "X-Forwarded-For": forwardedFor } : {}) },
+      headers: backendHeaders(forwardedFor, session),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
