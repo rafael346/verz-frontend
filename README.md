@@ -1,7 +1,14 @@
 # verz-frontend
 
 Frontend da casa de leilões **verz** em Next.js 16 (App Router), React 19, TypeScript e Tailwind 4.
-A API fica no repositório `verz-backend`. As decisões do projeto estão em `../DECISOES.md`.
+A API fica no repositório `verz-backend`. As decisões do projeto estão no
+[`DECISOES.md` do backend](https://github.com/rafael346/verz-backend/blob/main/DECISOES.md).
+
+## No ar
+
+**https://verz-frontend.vercel.app** (API na Fly.io, banco no Supabase). As contas de teste da produção (um leiloeiro
+e duas licitantes) e as senhas são entregues junto com o teste. Para rodar localmente com dados prontos, veja a seção
+"Dados de demonstração" do README do backend.
 
 ## Como rodar
 
