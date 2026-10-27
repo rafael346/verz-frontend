@@ -1,7 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+/**
+ * Na Vercel (D35, D36): /api/ vai ao Django no mesmo domínio do front, para o cookie de sessão valer, com o segredo
+ * que prova à API que a requisição passou por aqui. No Compose o nginx leva /api/ antes de chegar ao Next.
+ */
+function proxyToBackend(request: NextRequest, backendUrl: string) {
+  const headers = new Headers(request.headers);
+  const secret = process.env.PROXY_SECRET;
+  if (secret) headers.set("X-Verz-Proxy", secret);
+  const target = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, backendUrl);
+  return NextResponse.rewrite(target, { request: { headers } });
+}
+
 /** CSP com nonce por requisição (OWASP; guia oficial do Next 16): nenhum script inline sem o nonce roda. */
 export function proxy(request: NextRequest) {
+  const backendUrl = process.env.BACKEND_URL;
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    return backendUrl ? proxyToBackend(request, backendUrl) : NextResponse.next();
+  }
+
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const dev = process.env.NODE_ENV === "development";
   const csp = [
@@ -28,6 +45,7 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/api/:path*",
     {
       source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
       missing: [

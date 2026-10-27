@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { backendHeaders } from "./server-api";
 
@@ -14,5 +14,14 @@ describe("backendHeaders", () => {
 
   it("visitante sem sessão vai sem cookie", () => {
     expect(backendHeaders(null, undefined)).toEqual({ Accept: "application/json" });
+  });
+
+  it("na Vercel manda o segredo do proxy, sem ele a API recusa a leitura", () => {
+    vi.stubEnv("PROXY_SECRET", "segredo-do-front");
+    try {
+      expect(backendHeaders(null, undefined)).toEqual({ Accept: "application/json", "X-Verz-Proxy": "segredo-do-front" });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

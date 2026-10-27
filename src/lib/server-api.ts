@@ -18,10 +18,12 @@ export class BackendError extends Error {
  * contaria no limite de visitante (60/min por IP), mesmo para quem está logado (D30).
  */
 export function backendHeaders(forwardedFor: string | null, session: string | undefined): Record<string, string> {
+  const proxySecret = process.env.PROXY_SECRET; // na Vercel: prova à API que a leitura veio do front (D36)
   return {
     Accept: "application/json",
     ...(forwardedFor ? { "X-Forwarded-For": forwardedFor } : {}),
     ...(session ? { Cookie: `sessionid=${session}` } : {}),
+    ...(proxySecret ? { "X-Verz-Proxy": proxySecret } : {}),
   };
 }
 
