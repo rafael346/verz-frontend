@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { getRewrittenUrl, isRewrite } from "next/experimental/testing/server";
 import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -35,5 +36,23 @@ describe("CSP", () => {
 
     expect(csp["script-src"]).toContain("'unsafe-eval'");
     expect(csp["style-src"]).toBe("style-src 'self' 'unsafe-inline'");
+  });
+});
+
+describe("/api/ na Vercel (D36)", () => {
+  it("leva à API com o segredo do proxy, sobrescrevendo o que o visitante mandar", () => {
+    vi.stubEnv("BACKEND_URL", "https://api.exemplo");
+    vi.stubEnv("PROXY_SECRET", "segredo-do-front");
+    const request = new NextRequest("https://front.exemplo/api/auth/me/?a=1", { headers: { "X-Verz-Proxy": "do-atacante" } });
+
+    const response = proxy(request);
+
+    expect(isRewrite(response)).toBe(true);
+    expect(getRewrittenUrl(response)).toBe("https://api.exemplo/api/auth/me/?a=1");
+    expect(response.headers.get("x-middleware-request-x-verz-proxy")).toBe("segredo-do-front");
+  });
+
+  it("sem BACKEND_URL (Compose, onde o nginx leva /api/) não reescreve", () => {
+    expect(isRewrite(proxy(new NextRequest("http://localhost/api/auth/me/")))).toBe(false);
   });
 });
