@@ -41,7 +41,7 @@ function Gate({ text, href, action }: { text: string; href: string; action: stri
 function ReceiptLinks({ token }: { token: string }) {
   const href = `/comprovante/${token}`;
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-4 text-sm">
       {/* Sem prefetch: um comprovante por arremate da lista seria baixado sem ninguém pedir. */}
       <Link href={href} prefetch={false} className="ink-link pb-0.5">
         Ver comprovante

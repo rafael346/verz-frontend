@@ -21,7 +21,7 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
     {
       name: "mobile",
-      use: { ...devices["Pixel 7"], viewport: { width: 375, height: 812 } },
+      use: { ...devices["Pixel 7"], viewport: { width: 320, height: 640 } }, // a tela mais estreita em uso (iPhone SE): onde a rolagem horizontal aparece primeiro
       testMatch: /(vitrine|sala|auditoria)\.spec\.ts/,
     },
   ],

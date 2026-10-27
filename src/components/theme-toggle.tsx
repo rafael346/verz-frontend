@@ -29,7 +29,7 @@ export function ThemeToggle() {
             type="button"
             aria-pressed={mounted && theme === option.value}
             onClick={() => setTheme(option.value)}
-            className="pressable py-1 text-muted hover:text-foreground aria-pressed:font-semibold aria-pressed:text-foreground"
+            className="pressable py-1 pointer-coarse:py-3 text-muted hover:text-foreground aria-pressed:font-semibold aria-pressed:text-foreground"
           >
             {option.label}
           </button>

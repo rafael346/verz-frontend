@@ -90,7 +90,7 @@ export function ReceiptCard({ receipt, origin }: { receipt: Receipt; origin: str
         Confira este comprovante em <span className="break-all">{`${origin}/comprovante/${receipt.token}`}</span>
       </p>
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm print:hidden">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-sm print:hidden">
         <Link href={auditHref} className="ink-link pb-0.5">
           Auditar o histórico do lote
         </Link>

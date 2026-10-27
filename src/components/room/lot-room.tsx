@@ -172,7 +172,7 @@ export function LotRoom({ initialLot, initialBids }: Props) {
   return (
     <article className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-14">
       <figure className="flex flex-col gap-4">
-        <div className="flex aspect-[4/5] items-center justify-center overflow-hidden border border-border bg-card p-6 sm:p-10">
+        <div className="flex aspect-[4/5] items-center max-lg:max-h-[70svh] justify-center overflow-hidden border border-border bg-card p-6 sm:p-10">
           {/* eslint-disable-next-line @next/next/no-img-element -- cópia local da obra, servida pela API com cache de 1 dia */}
           <img
             src={lot.image_url}

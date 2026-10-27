@@ -151,7 +151,7 @@ export function AuditReport({ audit }: { audit: Audit }) {
         {audit.pages > 1 ? <AuditPages lotId={lot.id} page={audit.page} pages={audit.pages} /> : null}
       </section>
 
-      <nav aria-label="Auditoria" className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <nav aria-label="Auditoria" className="flex flex-wrap gap-x-6 gap-y-4 text-sm">
         {lot.status !== "cancelled" ? (
           <Link href={`/lotes/${lot.id}`} className="ink-link pb-0.5">
             Voltar para a sala do lote

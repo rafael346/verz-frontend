@@ -71,7 +71,7 @@ export function BidForm({ lot, wallet, onPlaced }: Props) {
         hint={`Mínimo de ${money(lot.min_next_bid)}.`}
         error={fields.amount}
       />
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-4 text-sm">
         <button
           type="button"
           onClick={() => setTyped({ min: lot.min_next_bid, text: amountInput(lot.min_next_bid) })}

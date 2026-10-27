@@ -10,7 +10,7 @@ import { LotCard } from "./lot-card";
 export function ShowcaseToolbar({ state }: { state: ShowcaseState }) {
   return (
     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-      <nav aria-label="Fases do leilão" className="flex gap-5 sm:gap-6">
+      <nav aria-label="Fases do leilão" className="flex flex-wrap gap-x-5 gap-y-4 sm:gap-x-6">
         {PHASES.map((entry) => (
           <Link
             key={entry.slug}
