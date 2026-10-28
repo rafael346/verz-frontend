@@ -10,6 +10,8 @@ A API fica no repositório `verz-backend`. As decisões do projeto estão no
 e duas licitantes) e as senhas são entregues junto com o teste. Para rodar localmente com dados prontos, veja a seção
 "Dados de demonstração" do README do backend.
 
+Tanto o backend quanto front end foram postos em produção com planos free das empresas que oferecem a opção de deploy entao podem ocorrer instabilidades, não devido ao ap em si mas sim a questões de memoria e disponibilidade dos serviços.
+
 ## Como rodar
 
 O navegador sempre entra pelo nginx (`http://localhost:8080`), que manda `/api/` para o Django e o resto para o Next.
@@ -21,6 +23,17 @@ Os arquivos do Docker Compose ficam no `verz-backend`, e o README de lá explica
   senha e o que cada lote mostra estão na seção "Dados de demonstração" do README do backend.
 - **Front com recarga automática:** aqui, `npm install` e `npm run dev`; em `verz-backend`,
   `FRONTEND_UPSTREAM=host.docker.internal:3000 docker compose up db backend worker nginx`; abra `http://localhost:8080`.
+
+## Dados para testar em produção
+- Alem desses usuarios criados, tambem é possivel  criar usuarios  tanto leiloeiro quanto licitante, eu adicionei essa opção apenas para facilitar o teste das funcionalidade e caso a quantidade de usuarios nao fosse o suficiente.
+- Não coloquei validação de senha e email muito forte pois nao era esse o foco do teste e nem foi pedido, mas seria um ponto a melhorar nessa parte.
+
+| Conta | Papel | Senha |
+|---|---|---|
+| `verz.leiloeiro1@example.com` | leiloeiro | @1234567890 |
+| `verz.licitante01@example.com` | licitante | @1234567890 |
+| `verz.licitante02@example.com` | licitante | @1234567890 |
+  
 
 ## Testes e checagens
 
