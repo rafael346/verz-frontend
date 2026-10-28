@@ -15,7 +15,7 @@ const BIDDER_LINKS = [
 ];
 
 export function Header() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, expired, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -72,6 +72,11 @@ export function Header() {
             </>
           ) : (
             <>
+              {expired ? (
+                <p role="status" className="text-muted">
+                  Sua sessão expirou.
+                </p>
+              ) : null}
               <Link href="/entrar" aria-current={pathname === "/entrar" ? "page" : undefined} className="ink-link pb-0.5">
                 Entrar
               </Link>

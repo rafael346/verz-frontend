@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useReducer, useRef, useState, useSyncExternalStore } from "react";
 
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { clockNow, subscribeClock } from "@/lib/clock";
 import { bidsCount, clockTime, lotNumber, money } from "@/lib/format";
 import type { Page } from "@/lib/lots";
@@ -89,11 +89,12 @@ function Outcome({ lot, standing }: { lot: LiveLot; standing: Standing | null })
   );
 }
 
-function Participation({ lot, open, standing, wallet, onPlaced }: {
+function Participation({ lot, open, standing, wallet, stale, onPlaced }: {
   lot: LiveLot;
   open: boolean;
   standing: Standing | null;
   wallet: Wallet | null;
+  stale: boolean;
   onPlaced: (bid: Bid, lot: LiveLot) => void;
 }) {
   const { user, loading } = useAuth();
@@ -113,6 +114,11 @@ function Participation({ lot, open, standing, wallet, onPlaced }: {
         {/* Região ao vivo sempre presente: quem disputa sem ver a tela ouve "superado" quando outro lance chega. */}
         <div aria-live="polite">
           <StandingNote standing={standing} />
+          {stale ? (
+            <p className="mt-2 text-sm text-muted">
+              Não conseguimos atualizar sua situação e seu saldo agora. Tentamos de novo no próximo lance, ou recarregue a página.
+            </p>
+          ) : null}
         </div>
         <BidForm lot={lot} wallet={wallet} onPlaced={onPlaced} />
       </div>
@@ -136,6 +142,7 @@ export function LotRoom({ initialLot, initialBids }: Props) {
   const bidder = user?.role === "bidder";
   const [standing, setStanding] = useState<Standing | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [stale, setStale] = useState(false);
   const latest = bids[0]?.sequence ?? 0;
 
   // Situação, posição e saldo vêm do backend (fonte única), de novo a cada lance que chega:
@@ -145,8 +152,14 @@ export function LotRoom({ initialLot, initialBids }: Props) {
     if (!bidder) return;
     let active = true;
     const timer = setTimeout(() => {
-      api<{ me: Standing | null }>(`/api/lots/${lot.id}/`).then((detail) => active && setStanding(detail.me), () => {});
-      api<Wallet>("/api/wallet/").then((data) => active && setWallet(data), () => {});
+      Promise.all([
+        api<{ me: Standing | null }>(`/api/lots/${lot.id}/`).then((detail) => active && setStanding(detail.me)),
+        api<Wallet>("/api/wallet/").then((data) => active && setWallet(data)),
+      ]).then(
+        () => active && setStale(false),
+        // 401 já desloga (AuthProvider); outro erro deixaria situação e saldo antigos na tela sem ninguém saber.
+        (failure) => active && !(failure instanceof ApiError && failure.status === 401) && setStale(true),
+      );
     }, 300);
     return () => {
       active = false;
@@ -247,6 +260,7 @@ export function LotRoom({ initialLot, initialBids }: Props) {
             open={open}
             standing={standing}
             wallet={wallet}
+            stale={stale}
             onPlaced={(bid, placed) => {
               dispatch({ type: "bid", bid, lot: placed });
               // Lance aceito sempre faz de você o líder: mostra já; a posição chega com a busca do `me`.

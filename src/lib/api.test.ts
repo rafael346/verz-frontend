@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { api, ApiError } from "./api";
+import { api, ApiError, SESSION_EXPIRED } from "./api";
 
 function reply(status: number, body?: unknown) {
   return new Response(body === undefined ? null : JSON.stringify(body), {
@@ -109,6 +109,23 @@ describe("api", () => {
 
     expect((await failure(api("/a/"))).message).toBe("O catálogo do museu está indisponível no momento.");
     expect((await failure(api("/b/"))).message).toMatch(/servidor/);
+  });
+
+  it("em 401 diz que a sessão expirou e avisa o resto da página", async () => {
+    mockFetch(reply(401, { detail: "As credenciais de autenticação não foram fornecidas." }));
+    const expired = vi.fn();
+    window.addEventListener(SESSION_EXPIRED, expired);
+
+    expect((await failure(api("/api/wallet/"))).message).toBe("Sua sessão expirou. Entre de novo para continuar.");
+    expect(expired).toHaveBeenCalledOnce();
+    window.removeEventListener(SESSION_EXPIRED, expired);
+  });
+
+  it("traduz a falha de CSRF do DRF, que vem em inglês", async () => {
+    mockFetch(reply(403, { detail: "CSRF Failed: CSRF token missing." }), reply(403, { detail: "Sem permissão aqui." }));
+
+    expect((await failure(api("/a/"))).message).toMatch(/Ative os cookies/);
+    expect((await failure(api("/b/"))).message).toBe("Sem permissão aqui."); // outro 403 segue com a mensagem do backend
   });
 
   it("devolve null em 204", async () => {

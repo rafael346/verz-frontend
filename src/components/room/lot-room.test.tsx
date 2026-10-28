@@ -195,6 +195,26 @@ describe("LotRoom", () => {
     expect(screen.getByText("Você foi superado").closest('[aria-live="polite"]')).not.toBeNull();
   });
 
+  it("falha ao atualizar situação e saldo é avisada, e o aviso some quando volta", async () => {
+    let walletUp = true;
+    fakeApi({
+      "GET /api/auth/me/": () => json(200, BIDDER),
+      "GET /api/lots/7/": () => json(200, { ...lot(), me: standing("winning", 1) }),
+      "GET /api/wallet/": () =>
+        walletUp ? json(200, { balance: "5000.00", committed: "1000.00", available: "4000.00" }) : json(429, {}),
+    });
+    renderRoom();
+    expect(await screen.findByText("R$ 4.000,00")).toBeInTheDocument();
+
+    walletUp = false;
+    FakeEventSource.last!.emit("bid", { type: "bid", bid: bid(2, "1050.00"), lot: lot({ current_bid: "1050.00", bid_count: 2 }) });
+    expect(await screen.findByText(/Não conseguimos atualizar sua situação/)).toBeInTheDocument();
+
+    walletUp = true;
+    FakeEventSource.last!.emit("bid", { type: "bid", bid: bid(3, "1100.00"), lot: lot({ current_bid: "1100.00", bid_count: 3 }) });
+    await waitFor(() => expect(screen.queryByText(/Não conseguimos atualizar sua situação/)).not.toBeInTheDocument());
+  });
+
   it("prorrogação pelo anti-sniping é avisada", async () => {
     fakeApi({ "GET /api/auth/me/": () => new Response(null, { status: 204 }) });
     renderRoom();

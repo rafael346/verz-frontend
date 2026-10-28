@@ -28,8 +28,16 @@ function firstMessage(value: unknown): string | null {
   return null;
 }
 
+/** Disparado a cada 401: a sessão acabou (expirou ou saiu em outra aba). O AuthProvider passa a tratar como deslogado. */
+export const SESSION_EXPIRED = "verz:session-expired";
+
 function messageFor(status: number, body: ErrorBody): string {
   if (status === 0) return "Sem conexão com o servidor. Verifique sua internet e tente de novo.";
+  if (status === 401) return "Sua sessão expirou. Entre de novo para continuar.";
+  // O DRF não traduz a falha de CSRF ("CSRF Failed: CSRF token missing."); acontece com cookies bloqueados.
+  if (status === 403 && typeof body?.detail === "string" && body.detail.startsWith("CSRF Failed")) {
+    return "Não foi possível validar sua sessão neste navegador. Ative os cookies e recarregue a página.";
+  }
   if (status === 429) return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
   // 503 com detail é indisponibilidade explicada pelo próprio backend (ex.: acervo do Met fora do ar).
   if (status === 503 && typeof body?.detail === "string") return body.detail;
@@ -71,6 +79,7 @@ export async function api<T = unknown>(path: string, { method = "GET", body }: O
     throw new ApiError(0, null);
   }
   const data = response.status === 204 ? null : await response.json().catch(() => null);
+  if (response.status === 401) window.dispatchEvent(new Event(SESSION_EXPIRED));
   if (!response.ok) throw new ApiError(response.status, data);
   return data as T;
 }
